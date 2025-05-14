@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <fstream>
+#include <vector>
 
 struct VirtualMachine
 {
@@ -19,12 +20,12 @@ std::stringstream memoryItem;
 // Registers
 std::map<int, std::string> registers;
 
-void rotateLeft(int num, int rotateAmount)
+void rotateLeft(int &num, int rotateAmount)
 {
     num = (num << rotateAmount) | (num >> 8 - rotateAmount);
 }
 
-void rotateRight(int num, int rotateAmount)
+void rotateRight(int &num, int rotateAmount)
 {
     num = (num >> rotateAmount) | (num << 8 - rotateAmount);
 }
@@ -47,7 +48,7 @@ void checkByteRange(signed char x, VirtualMachine &vm)
     }
 }
 
-void outputToFile(VirtualMachine vm)
+void outputToFile(VirtualMachine &vm)
 {
     std::ostringstream registerText;
     std::ostringstream memoryText;
@@ -59,7 +60,7 @@ void outputToFile(VirtualMachine vm)
         memoryItem.str("");
         memoryItem.clear();
         memoryItem << std::uppercase << std::setfill('0') << std::setw(2)
-                   << std::hex << (static_cast<int>(static_cast<unsigned char>(vm.registers[i])) & 0xFF);
+                   << std::hex << (static_cast<int>(vm.registers[i]) & 0xFF);
         registerText << memoryItem.str();
 
         if (i == 7)
@@ -89,7 +90,7 @@ void outputToFile(VirtualMachine vm)
         memoryItem.str("");
         memoryItem.clear();
         memoryItem << std::uppercase << std::setfill('0') << std::setw(2)
-                   << std::hex << (static_cast<int>(static_cast<unsigned char>(vm.memoryAddresses[i])) & 0xFF);
+                   << std::hex << (static_cast<int>(vm.memoryAddresses[i]) & 0xFF);
         memoryText << memoryItem.str() << "  ";
 
         if ((i + 1) % 8 == 0)
@@ -102,6 +103,16 @@ void outputToFile(VirtualMachine vm)
     std::cout << flagText.str() << std::endl;
     std::cout << pcText.str() << std::endl;
     std::cout << memoryText.str() << std::endl;
+}
+
+void INPUT(int regNum, VirtualMachine &vm)
+{
+    char res;
+    std::cout << "?";
+    std::cin >> res;
+    std::cin.ignore(80, '\n');
+    std::cout << std::endl;
+    vm.registers[regNum] = res;
 }
 
 int main()
@@ -119,15 +130,25 @@ int main()
     std::string instruction, command;
     while (getline(assmeblyProgram, instruction))
     {
-        command = "";
-        for(char ins : instruction){
-            if(ins != ' '){
-                command += ins;
-            } else {
-                break;
+        std::vector<std::string> command;
+        std::string tempBuffer;
+        for (char ins : instruction)
+        {
+            if (ins != ' ')
+            {
+                tempBuffer += ins;
+            }
+            else
+            {
+                command.push_back(tempBuffer);
+                tempBuffer = "";
+                continue;
             }
         }
-        // if statements here
+        // if statement here
+        if (command[0] == "INPUT")
+        {
+        }
         continue;
     }
 

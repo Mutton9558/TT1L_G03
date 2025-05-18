@@ -5,6 +5,7 @@
 #include <string>
 #include <fstream>
 #include <vector>
+#include <unordered_set>
 
 struct VirtualMachine
 {
@@ -14,20 +15,20 @@ struct VirtualMachine
     std::map<int, char> memoryAddresses;
 };
 
-// Memory locations
+std::unordered_set<std::string> instructionSet = {
+    "INPUT", "DISPLAY", "MOV", "ADD", "SUB", "MUL", "DIV",
+    "INC", "DEC", "ROL", "ROR", "SHL", "SHR", "LOAD", "STORE"};
+
 std::stringstream memoryItem;
 
-// Registers
-std::map<int, std::string> registers;
-
-void rotateLeft(int &num, int rotateAmount)
+void rotateLeft(VirtualMachine &vm, std::string regNum, int rotateAmount)
 {
-    num = (num << rotateAmount) | (num >> 8 - rotateAmount);
+    vm.registers[regNum] = (vm.registers[regNum] << rotateAmount) | (vm.registers[regNum] >> (8 - rotateAmount));
 }
 
-void rotateRight(int &num, int rotateAmount)
+void rotateRight(VirtualMachine &vm, std::string regNum, int rotateAmount)
 {
-    num = (num >> rotateAmount) | (num << 8 - rotateAmount);
+    vm.registers[regNum] = (vm.registers[regNum] >> rotateAmount) | (vm.registers[regNum] << (8 - rotateAmount));
 }
 
 void checkByteRange(int x, VirtualMachine &vm)
@@ -52,7 +53,6 @@ void outputToFile(VirtualMachine &vm)
 {
     std::ostringstream registerText;
     std::ostringstream memoryText;
-    std::ostringstream memoryItem;
 
     registerText << "Registers: ";
     for (const auto &regPair : vm.registers)
@@ -106,19 +106,22 @@ void outputToFile(VirtualMachine &vm)
 void INPUT(std::string regNum, VirtualMachine &vm)
 {
     // subject to change
-    char res;
+    std::string res;
     std::cout << "?";
-    std::cin >> res;
-    std::cin.ignore(80, '\n');
+    std::getline(std::cin, res);
+    if (res.length() > 1)
+    {
+        std::cout << "Error! More than one digit/letter found!" << std::endl;
+        std::cout.flush();
+        exit(-1);
+    }
     std::cout << std::endl;
-    int ans = static_cast<int>(res);
-    checkByteRange(ans, vm);
-    vm.registers[regNum] = res;
+    checkByteRange(static_cast<int>(res[0]), vm);
+    vm.registers[regNum] = res[0];
 }
 
 int main()
 {
-    // Initilize vm
     VirtualMachine vm;
 
     // initialize memory
@@ -127,45 +130,97 @@ int main()
         // addToMemory(i, 0);
         vm.memoryAddresses[i] = 0;
     }
-    outputToFile(vm);
     std::ifstream assmeblyProgram("test1.asm");
-    std::string instruction, command;
+    std::string instruction;
+    std::vector<std::string> command;
+    std::string tempBuffer;
+    int count;
     while (getline(assmeblyProgram, instruction))
     {
-        std::vector<std::string> command;
-        std::string tempBuffer;
+        count = 0;
+        vm.PC++;
+        // change to stringstream?
         for (char ins : instruction)
         {
-            if (ins != ' ')
+            if (ins != ' ' && ins != ',')
             {
                 tempBuffer += ins;
             }
             else
             {
-                command.push_back(tempBuffer);
-                tempBuffer = "";
+                if (tempBuffer != "")
+                {
+                    if (instructionSet.count(tempBuffer))
+                    {
+                        if (++count == 2)
+                        {
+                            std::cout << "Error! Two or more instructions found at line " << vm.PC << "!" << std::endl;
+                            std::cout.flush();
+                            exit(-1);
+                        }
+                    }
+                    command.push_back(tempBuffer);
+                    tempBuffer = "";
+                }
             }
         }
         if (!tempBuffer.empty())
         {
+            if (instructionSet.count(tempBuffer))
+            {
+                if (++count == 2)
+                {
+                    std::cout << "Error! Two or more instructions found at line " << vm.PC << "!" << std::endl;
+                    std::cout.flush();
+                    exit(-1);
+                }
+            }
             command.push_back(tempBuffer);
+            tempBuffer = "";
         }
         // if statement here
         if (command[0] == "INPUT")
         {
             if (command.size() != 2)
             {
-                std::cout << "Invalid length for command INPUT" << std::endl;
+                std::cout << "Invalid length for command INPUT at line " << vm.PC << std::endl;
+                std::cout.flush();
+                exit(-1);
             }
             else
             {
                 INPUT(command[1], vm);
             }
         }
-
-        vm.PC++;
+        else if (command[0] == "ROL")
+        {
+            if (command.size() != 3)
+            {
+                std::cout << "Invalid length for command ROL at line " << vm.PC << std::endl;
+                std::cout.flush();
+                exit(-1);
+            }
+            else
+            {
+                rotateLeft(vm, command[1], std::stoi(command[2]));
+            }
+        }
+        else if (command[0] == "ROR")
+        {
+            if (command.size() != 3)
+            {
+                std::cout << "Invalid length for command ROR at line " << vm.PC << std::endl;
+                std::cout.flush();
+                exit(-1);
+            }
+            else
+            {
+                rotateRight(vm, command[1], std::stoi(command[2]));
+            }
+        }
+        command.clear();
     }
-
+    vm.PC++;
     outputToFile(vm);
     return 0;
 }

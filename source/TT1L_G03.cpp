@@ -5,13 +5,15 @@
 #include <vector>
 #include "virtualmachines.h"
 
-const std::string instructionSet[15] = {
+using namespace std;
+
+const string instructionSet[15] = {
     "ADD", "DEC", "DISPLAY", "DIV", "INC", "INPUT", "LOAD", "MOV",
     "MUL", "ROL", "ROR", "SHL", "SHR", "STORE", "SUB"};
 
-std::stringstream memoryItem;
+stringstream memoryItem;
 
-bool searchForInstruction(std::string word)
+bool searchForInstruction(string word)
 {
     int left = 0, right = 14;
     while (left <= right)
@@ -33,9 +35,9 @@ bool searchForInstruction(std::string word)
     return false;
 }
 
-std::string registerOutput(VirtualMachine &vm)
+string registerOutput(VirtualMachine &vm)
 {
-    std::ostringstream registerText;
+    ostringstream registerText;
     registerText << "Registers: ";
     for (int i = 0; i < 8; i++)
     {
@@ -55,15 +57,15 @@ std::string registerOutput(VirtualMachine &vm)
     return registerText.str();
 }
 
-std::string memoryOutput(VirtualMachine &vm)
+string memoryOutput(VirtualMachine &vm)
 {
-    std::ostringstream memoryText;
+    ostringstream memoryText;
     memoryText << "Memory   : \n";
     for (int i = 0; i < 64; i++)
     {
         memoryItem.str("");
         memoryItem.clear();
-        memoryItem << std::uppercase << std::setfill('0') << std::setw(3) << static_cast<int>(vm.memoryAddresses[i]);
+        memoryItem << uppercase << setfill('0') << setw(3) << static_cast<int>(vm.memoryAddresses[i]);
         memoryText << memoryItem.str() << "  ";
 
         if ((i + 1) % 8 == 0)
@@ -75,9 +77,9 @@ std::string memoryOutput(VirtualMachine &vm)
 
 void outputToFile(VirtualMachine &vm)
 {
-    std::string registerText = registerOutput(vm);
+    string registerText = registerOutput(vm);
 
-    std::ostringstream flagText;
+    ostringstream flagText;
     flagText << "Flags    : ";
     flagText
         << vm.OF << "   "
@@ -85,10 +87,10 @@ void outputToFile(VirtualMachine &vm)
         << vm.CF << "   "
         << vm.ZF << "#";
 
-    std::ostringstream pcText;
+    ostringstream pcText;
     pcText << "PC       : " << vm.PC;
 
-    std::string memoryText = memoryOutput(vm);
+    string memoryText = memoryOutput(vm);
     // temporary for testing purposes
     std::cout << registerText << std::endl;
     std::cout << flagText.str() << std::endl;
@@ -104,37 +106,37 @@ int main()
     {
         vm.memoryAddresses.push_back(0);
     }
-    std::ifstream assemblyProgram;
-    std::string filename;
+    ifstream assemblyProgram;
+    string filename;
     do
     {
-        std::cout << "Type the name of a file" << std::endl;
-        std::cin >> filename;
+        cout << "Type the name of a file" << std::endl;
+        cin >> filename;
         assemblyProgram.open(filename);
         if (!assemblyProgram.is_open())
         {
-            std::cout << "Error! No file named " << filename << " was found!" << std::endl;
+            cout << "Error! No file named " << filename << " was found!" << endl;
         }
     } while (!assemblyProgram.is_open());
 
-    std::string instruction;
-    std::vector<std::string> command;
-    std::stringstream ss;
-    std::string word;
+    string instruction;
+    vector<string> command;
+    stringstream ss;
+    string word;
     int count;
     while (getline(assemblyProgram, instruction))
     {
         command.clear();
         count = 0;
         vm.PC++;
-        ss = std::stringstream(instruction);
-        if (std::getline(ss, word, ' ') && !word.empty())
+        ss = stringstream(instruction);
+        if (getline(ss, word, ' ') && !word.empty())
             command.push_back(word);
 
-        if (std::getline(ss, word, ',') && !word.empty())
+        if (getline(ss, word, ',') && !word.empty())
             command.push_back(word);
 
-        if (std::getline(ss, word) && !word.empty())
+        if (getline(ss, word) && !word.empty())
             command.push_back(word);
         for (int i = 0; i < command.size(); i++)
         {
@@ -142,48 +144,24 @@ int main()
             {
                 if (++count == 2)
                 {
-                    std::cout << "Error! Two or more instructions found at line " << vm.PC << "!" << std::endl;
+                    cout << "Error! Two or more instructions found at line " << vm.PC << "!" << endl;
+                    exit(-1);
                 }
             }
         }
 
         // change to switch case later
-        // change for invalid reg num
         if (command[0] == "INPUT")
         {
-            if (command.size() != 2)
-            {
-                std::cout << "Invalid length for command INPUT at line " << vm.PC << std::endl;
-                exit(-1);
-            }
-            else
-            {
-                input(command[1], vm);
-            }
+            input(command, vm);
         }
         else if (command[0] == "ROL")
         {
-            if (command.size() != 3)
-            {
-                std::cout << "Invalid length for command ROL at line " << vm.PC << std::endl;
-                exit(-1);
-            }
-            else
-            {
-                rol(vm, command[1], std::stoi(command[2]));
-            }
+            rol(vm, command);
         }
         else if (command[0] == "ROR")
         {
-            if (command.size() != 3)
-            {
-                std::cout << "Invalid length for command ROR at line " << vm.PC << std::endl;
-                exit(-1);
-            }
-            else
-            {
-                ror(vm, command[1], std::stoi(command[2]));
-            }
+            rol(vm, command);
         }
     }
     assemblyProgram.close();

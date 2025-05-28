@@ -1,2 +1,2 @@
 INPUT R1
-ROL R1,2
+ROL R1, 2

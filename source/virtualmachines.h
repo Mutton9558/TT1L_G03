@@ -14,7 +14,7 @@ struct VirtualMachine
     bool ZF = false;
     bool CF = false;
     int PC = 0;
-    vector<char> memoryAddresses;
+    char memoryAddresses[64] = {0};
 };
 
 #endif
@@ -35,6 +35,11 @@ void checkByteRange(int x, VirtualMachine &vm)
     }
 }
 
+// check if value is from register or memory address
+void getSrcValue(string s, VirtualMachine &vm)
+{
+}
+
 void input(vector<string> command, VirtualMachine &vm)
 {
 
@@ -43,7 +48,7 @@ void input(vector<string> command, VirtualMachine &vm)
         cout << "Invalid length for command INPUT at line " << vm.PC << endl;
         exit(-1);
     }
-    if (command[1].size() != 2)
+    if (command[1].size() != 2 || !isdigit(command[1][1]))
     {
         cout << "Invalid register number " << command[1] << "at line " << vm.PC << endl;
         exit(-1);
@@ -72,7 +77,7 @@ void rol(VirtualMachine &vm, vector<string> command)
         cout << "Invalid length for command ROL at line " << vm.PC << endl;
         exit(-1);
     }
-    if (command[1].size() != 2)
+    if (command[1].size() != 2 || !isdigit(command[1][1]))
     {
         cout << "Invalid register number " << command[1] << "at line " << vm.PC << endl;
         exit(-1);
@@ -93,7 +98,7 @@ void ror(VirtualMachine &vm, vector<string> command)
         exit(-1);
     }
 
-    if (command[1].size() != 2)
+    if (command[1].size() != 2 || !isdigit(command[1][1]))
     {
         cout << "Invalid register number " << command[1] << "at line " << vm.PC << endl;
         exit(-1);

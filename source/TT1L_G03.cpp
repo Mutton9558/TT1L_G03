@@ -77,6 +77,7 @@ string memoryOutput(VirtualMachine &vm)
 
 void outputToFile(VirtualMachine &vm)
 {
+    ofstream fileOutput;
     string registerText = registerOutput(vm);
 
     ostringstream flagText;
@@ -91,6 +92,19 @@ void outputToFile(VirtualMachine &vm)
     pcText << "PC       : " << vm.PC;
 
     string memoryText = memoryOutput(vm);
+
+    fileOutput.open("output.txt");
+    if (!fileOutput.is_open())
+    {
+        cout << "Error opening file output.txt" << endl;
+        exit(-1);
+    }
+
+    fileOutput << registerText << endl;
+    fileOutput << flagText.str() << endl;
+    fileOutput << pcText.str() << endl
+               << endl;
+    fileOutput << memoryText << endl;
     // temporary for testing purposes
     std::cout << registerText << std::endl;
     std::cout << flagText.str() << std::endl;
@@ -106,6 +120,7 @@ int main()
     {
         vm.memoryAddresses.push_back(0);
     }
+    outputToFile(vm);
     ifstream assemblyProgram;
     string filename;
     do
@@ -121,23 +136,22 @@ int main()
 
     string instruction;
     vector<string> command;
-    stringstream ss;
-    string word;
-    int count;
     while (getline(assemblyProgram, instruction))
     {
         command.clear();
-        count = 0;
+        int count = 0;
         vm.PC++;
-        ss = stringstream(instruction);
-        if (getline(ss, word, ' ') && !word.empty())
-            command.push_back(word);
+        istringstream ss(instruction);
+        string line;
+        while (ss >> line)
+        {
+            if (!line.empty() && line.back() == ',')
+            {
+                line.pop_back();
+            }
 
-        if (getline(ss, word, ',') && !word.empty())
-            command.push_back(word);
-
-        if (getline(ss, word) && !word.empty())
-            command.push_back(word);
+            command.push_back(line);
+        }
         for (int i = 0; i < command.size(); i++)
         {
             if (searchForInstruction(command[i]))

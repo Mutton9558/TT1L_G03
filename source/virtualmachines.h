@@ -9,7 +9,10 @@ using namespace std;
 struct VirtualMachine
 {
     char registers[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-    bool OF, UF, CF, ZF;
+    bool OF = false;
+    bool UF = false;
+    bool ZF = false;
+    bool CF = false;
     int PC = 0;
     vector<char> memoryAddresses;
 };
@@ -21,12 +24,10 @@ void checkByteRange(int x, VirtualMachine &vm)
     if (x > 127)
     {
         vm.OF = 1;
-        x -= 127;
     }
     else if (x < -128)
     {
         vm.UF = 1;
-        x += 128;
     }
     else if (x == 0)
     {

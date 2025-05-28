@@ -115,11 +115,7 @@ void outputToFile(VirtualMachine &vm)
 int main()
 {
     VirtualMachine vm;
-    // initialize memory
-    for (int i = 0; i < 64; i++)
-    {
-        vm.memoryAddresses.push_back(0);
-    }
+
     outputToFile(vm);
     ifstream assemblyProgram;
     string filename;

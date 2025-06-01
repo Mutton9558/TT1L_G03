@@ -3,18 +3,18 @@
 #include <sstream>
 #include <fstream>
 #include <vector>
+#include <stdint.h>
 #include "virtualmachines.h"
 
 using namespace std;
-
-const string instructionSet[15] = {
-    "ADD", "DEC", "DISPLAY", "DIV", "INC", "INPUT", "LOAD", "MOV",
-    "MUL", "ROL", "ROR", "SHL", "SHR", "STORE", "SUB"};
 
 stringstream memoryItem;
 
 bool searchForInstruction(string word)
 {
+    const string instructionSet[15] = {
+        "ADD", "DEC", "DISPLAY", "DIV", "INC", "INPUT", "LOAD", "MOV",
+        "MUL", "ROL", "ROR", "SHL", "SHR", "STORE", "SUB"};
     int left = 0, right = 14;
     while (left <= right)
     {
@@ -105,6 +105,8 @@ void outputToFile(VirtualMachine &vm)
     fileOutput << pcText.str() << endl
                << endl;
     fileOutput << memoryText << endl;
+
+    fileOutput.close();
     // temporary for testing purposes
     std::cout << registerText << std::endl;
     std::cout << flagText.str() << std::endl;
@@ -116,7 +118,6 @@ int main()
 {
     VirtualMachine vm;
 
-    outputToFile(vm);
     ifstream assemblyProgram;
     string filename;
     do
@@ -152,7 +153,7 @@ int main()
         {
             if (searchForInstruction(command[i]))
             {
-                if (++count == 2)
+                if (++count >= 2)
                 {
                     cout << "Error! Two or more instructions found at line " << vm.PC << "!" << endl;
                     exit(-1);
@@ -172,6 +173,11 @@ int main()
         else if (command[0] == "ROR")
         {
             rol(vm, command);
+        }
+        else
+        {
+            cout << "Invalid instruction name " << command[0] << " at line " << vm.PC << "!" << endl;
+            exit(-1);
         }
     }
     assemblyProgram.close();

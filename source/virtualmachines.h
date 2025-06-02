@@ -186,3 +186,82 @@ void shl(VirtualMachine &vm, vector<string> command)
         exit(-1);
     }
 }
+
+void mul(VirtualMachine &vm, vector<string> command)
+{
+    if (command.size() != 3)
+    {
+        cout << "Invalid length for command MUL at line " << vm.PC << endl;
+        exit(-1);
+    }
+    int reg1 = getRegisterNumber(command[1], isMemoryAccess);
+    int reg2 = getRegisterNumber(command[2], isMemoryAccess);
+    if (reg1 == -1 || reg2 == -1)
+    {
+        cout << "Invalid register number in MUL at line " << vm.PC << endl;
+        exit(-1);
+    }
+    int result = static_cast<int>(vm.registers[reg1]) * static_cast<int>(vm.registers[reg2]);
+    checkByteRange(result, vm);
+    vm.registers[reg1] = static_cast<char>(result);
+}
+
+void div(VirtualMachine &vm, vector<string> command)
+{
+    if (command.size() != 3)
+    {
+        cout << "Invalid length for command DIV at line " << vm.PC << endl;
+        exit(-1);
+    }
+    int reg1 = getRegisterNumber(command[1], isMemoryAccess);
+    int reg2 = getRegisterNumber(command[2], isMemoryAccess);
+    if (reg1 == -1 || reg2 == -1)
+    {
+        cout << "Invalid register number in DIV at line " << vm.PC << endl;
+        exit(-1);
+    }
+    if (vm.registers[reg2] == 0)
+    {
+        cout << "Division by zero in DIV at line " << vm.PC << endl;
+        exit(-1);
+    }
+    int result = static_cast<int>(vm.registers[reg1]) / static_cast<int>(vm.registers[reg2]);
+    checkByteRange(result, vm);
+    vm.registers[reg1] = static_cast<char>(result);
+}
+
+void inc(VirtualMachine &vm, vector<string> command)
+{
+    if (command.size() != 2)
+    {
+        cout << "Invalid length for command INC at line " << vm.PC << endl;
+        exit(-1);
+    }
+    int reg = getRegisterNumber(command[1], isMemoryAccess);
+    if (reg == -1)
+    {
+        cout << "Invalid register number in INC at line " << vm.PC << endl;
+        exit(-1);
+    }
+    int result = static_cast<int>(vm.registers[reg]) + 1;
+    checkByteRange(result, vm);
+    vm.registers[reg] = static_cast<char>(result);
+}
+
+void dec(VirtualMachine &vm, vector<string> command)
+{
+    if (command.size() != 2)
+    {
+        cout << "Invalid length for command DEC at line " << vm.PC << endl;
+        exit(-1);
+    }
+    int reg = getRegisterNumber(command[1], isMemoryAccess);
+    if (reg == -1)
+    {
+        cout << "Invalid register number in DEC at line " << vm.PC << endl;
+        exit(-1);
+    }
+    int result = static_cast<int>(vm.registers[reg]) - 1;
+    checkByteRange(result, vm);
+    vm.registers[reg] = static_cast<char>(result);
+}

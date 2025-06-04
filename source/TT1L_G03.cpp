@@ -43,7 +43,15 @@ string registerOutput(VirtualMachine &vm)
     {
         memoryItem.str("");
         memoryItem.clear();
-        memoryItem << std::uppercase << std::setfill('0') << std::setw(3) << static_cast<int>(vm.registers[i]);
+        int item = static_cast<int>(vm.registers[i]);
+        if (item < 0)
+        {
+            memoryItem << item;
+        }
+        else
+        {
+            memoryItem << uppercase << setfill('0') << setw(3) << item;
+        }
         registerText << memoryItem.str();
         if (i == 7)
         {
@@ -65,7 +73,16 @@ string memoryOutput(VirtualMachine &vm)
     {
         memoryItem.str("");
         memoryItem.clear();
-        memoryItem << uppercase << setfill('0') << setw(3) << static_cast<int>(vm.memoryAddresses[i]);
+        int item = static_cast<int>(vm.memoryAddresses[i]);
+        if (item < 0)
+        {
+            memoryItem << item;
+        }
+        else
+        {
+            memoryItem << uppercase << setfill('0') << setw(3) << item;
+        }
+
         memoryText << memoryItem.str() << "  ";
 
         if ((i + 1) % 8 == 0)
@@ -89,7 +106,7 @@ void outputToFile(VirtualMachine &vm)
         << vm.ZF << "#";
 
     ostringstream pcText;
-    pcText << "PC       : " << vm.PC;
+    pcText << "PC       : " << unsigned(vm.PC);
 
     string memoryText = memoryOutput(vm);
 
@@ -155,7 +172,7 @@ int main()
             {
                 if (++count >= 2)
                 {
-                    cout << "Error! Two or more instructions found at line " << vm.PC << "!" << endl;
+                    cout << "Error! Two or more instructions found at line " << unsigned(vm.PC) << "!" << endl;
                     exit(-1);
                 }
             }
@@ -164,7 +181,39 @@ int main()
         // change to switch case later
         if (command[0] == "INPUT")
         {
-            input(command, vm);
+            input(vm, command);
+        }
+        else if (command[0] == "DISPLAY")
+        {
+            display(vm, command);
+        }
+        else if (command[0] == "MOV")
+        {
+            mov(vm, command);
+        }
+        else if (command[0] == "ADD")
+        {
+            add(vm, command);
+        }
+        else if (command[0] == "SUB")
+        {
+            sub(vm, command);
+        }
+        else if (command[0] == "MUL")
+        {
+            mul(vm, command);
+        }
+        else if (command[0] == "DIV")
+        {
+            div(vm, command);
+        }
+        else if (command[0] == "INC")
+        {
+            inc(vm, command);
+        }
+        else if (command[0] == "DEC")
+        {
+            dec(vm, command);
         }
         else if (command[0] == "ROL")
         {
@@ -174,9 +223,25 @@ int main()
         {
             rol(vm, command);
         }
+        else if (command[0] == "SHL")
+        {
+            shl(vm, command);
+        }
+        else if (command[0] == "SHR")
+        {
+            shr(vm, command);
+        }
+        else if (command[0] == "LOAD")
+        {
+            load(vm, command);
+        }
+        else if (command[0] == "STORE")
+        {
+            store(vm, command);
+        }
         else
         {
-            cout << "Invalid instruction name " << command[0] << " at line " << vm.PC << "!" << endl;
+            cout << "Invalid instruction name " << command[0] << " at line " << unsigned(vm.PC) << "!" << endl;
             exit(-1);
         }
     }

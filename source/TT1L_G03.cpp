@@ -3,12 +3,9 @@
 #include <sstream>
 #include <fstream>
 #include <vector>
-#include <stdint.h>
 #include "virtualmachines.h"
 
 using namespace std;
-
-stringstream memoryItem;
 
 bool searchForInstruction(string word)
 {
@@ -41,18 +38,16 @@ string registerOutput(VirtualMachine &vm)
     registerText << "Registers: ";
     for (int i = 0; i < 8; i++)
     {
-        memoryItem.str("");
-        memoryItem.clear();
+
         int item = static_cast<int>(vm.registers[i]);
         if (item < 0)
         {
-            memoryItem << item;
+            registerText << setw(4) << item;
         }
         else
         {
-            memoryItem << uppercase << setfill('0') << setw(3) << item;
+            registerText << setfill('0') << setw(3) << item;
         }
-        registerText << memoryItem.str();
         if (i == 7)
         {
             registerText << "#";
@@ -71,19 +66,15 @@ string memoryOutput(VirtualMachine &vm)
     memoryText << "Memory   : \n";
     for (int i = 0; i < 64; i++)
     {
-        memoryItem.str("");
-        memoryItem.clear();
         int item = static_cast<int>(vm.memoryAddresses[i]);
         if (item < 0)
         {
-            memoryItem << item;
+            memoryText << setw(4) << item << "  ";
         }
         else
         {
-            memoryItem << uppercase << setfill('0') << setw(3) << item;
+            memoryText << setfill('0') << setw(3) << item << "  ";
         }
-
-        memoryText << memoryItem.str() << "  ";
 
         if ((i + 1) % 8 == 0)
             memoryText << "\n";
@@ -106,7 +97,7 @@ void outputToFile(VirtualMachine &vm)
         << vm.ZF << "#";
 
     ostringstream pcText;
-    pcText << "PC       : " << unsigned(vm.PC);
+    pcText << "PC       : " << static_cast<int>(vm.PC);
 
     string memoryText = memoryOutput(vm);
 
@@ -124,14 +115,77 @@ void outputToFile(VirtualMachine &vm)
     fileOutput << memoryText << endl;
 
     fileOutput.close();
-    // temporary for testing purposes
-    std::cout << registerText << std::endl;
-    std::cout << flagText.str() << std::endl;
-    std::cout << pcText.str() << std::endl;
-    std::cout << memoryText << std::endl;
 }
 
-int main()
+void runInstruction(VirtualMachine &vm, vector<string> &command)
+{
+    const string &cmd = command[0];
+    if (cmd == "INPUT")
+        input(vm, command);
+    else if (cmd == "DISPLAY")
+        display(vm, command);
+    else if (cmd == "MOV")
+        mov(vm, command);
+    else if (cmd == "ADD")
+        add(vm, command);
+    else if (cmd == "SUB")
+        sub(vm, command);
+    else if (cmd == "MUL")
+        mul(vm, command);
+    else if (cmd == "DIV")
+        div(vm, command);
+    else if (cmd == "INC")
+        inc(vm, command);
+    else if (cmd == "DEC")
+        dec(vm, command);
+    else if (cmd == "ROL")
+        rol(vm, command);
+    else if (cmd == "ROR")
+        rol(vm, command);
+    else if (cmd == "SHL")
+        shl(vm, command);
+    else if (cmd == "SHR")
+        shr(vm, command);
+    else if (cmd == "LOAD")
+        load(vm, command);
+    else if (cmd == "STORE")
+        store(vm, command);
+    else
+    {
+        cout << "Invalid instruction name " << cmd
+             << " at line " << static_cast<int>(vm.PC) << "!" << endl;
+        exit(-1);
+    }
+}
+
+void getInstruction(VirtualMachine &vm, vector<string> &command, string instruction)
+{
+    command.clear();
+    int count = 0;
+    vm.PC++;
+    istringstream ss(instruction);
+    string line;
+    while (ss >> line)
+    {
+        if (!line.empty() && line.back() == ',')
+            line.pop_back();
+        command.push_back(line);
+    }
+    for (int i = 0; i < command.size(); i++)
+    {
+        if (searchForInstruction(command[i]))
+        {
+            if (++count >= 2)
+            {
+                cout << "Error! Two or more instructions found at line " << static_cast<int>(vm.PC) << "!" << endl;
+                exit(-1);
+            }
+        }
+    }
+    runInstruction(vm, command);
+}
+
+void runner()
 {
     VirtualMachine vm;
 
@@ -152,101 +206,15 @@ int main()
     vector<string> command;
     while (getline(assemblyProgram, instruction))
     {
-        command.clear();
-        int count = 0;
-        vm.PC++;
-        istringstream ss(instruction);
-        string line;
-        while (ss >> line)
-        {
-            if (!line.empty() && line.back() == ',')
-            {
-                line.pop_back();
-            }
-
-            command.push_back(line);
-        }
-        for (int i = 0; i < command.size(); i++)
-        {
-            if (searchForInstruction(command[i]))
-            {
-                if (++count >= 2)
-                {
-                    cout << "Error! Two or more instructions found at line " << unsigned(vm.PC) << "!" << endl;
-                    exit(-1);
-                }
-            }
-        }
-
-        // change to switch case later
-        if (command[0] == "INPUT")
-        {
-            input(vm, command);
-        }
-        else if (command[0] == "DISPLAY")
-        {
-            display(vm, command);
-        }
-        else if (command[0] == "MOV")
-        {
-            mov(vm, command);
-        }
-        else if (command[0] == "ADD")
-        {
-            add(vm, command);
-        }
-        else if (command[0] == "SUB")
-        {
-            sub(vm, command);
-        }
-        else if (command[0] == "MUL")
-        {
-            mul(vm, command);
-        }
-        else if (command[0] == "DIV")
-        {
-            div(vm, command);
-        }
-        else if (command[0] == "INC")
-        {
-            inc(vm, command);
-        }
-        else if (command[0] == "DEC")
-        {
-            dec(vm, command);
-        }
-        else if (command[0] == "ROL")
-        {
-            rol(vm, command);
-        }
-        else if (command[0] == "ROR")
-        {
-            rol(vm, command);
-        }
-        else if (command[0] == "SHL")
-        {
-            shl(vm, command);
-        }
-        else if (command[0] == "SHR")
-        {
-            shr(vm, command);
-        }
-        else if (command[0] == "LOAD")
-        {
-            load(vm, command);
-        }
-        else if (command[0] == "STORE")
-        {
-            store(vm, command);
-        }
-        else
-        {
-            cout << "Invalid instruction name " << command[0] << " at line " << unsigned(vm.PC) << "!" << endl;
-            exit(-1);
-        }
+        getInstruction(vm, command, instruction);
     }
     assemblyProgram.close();
     vm.PC++;
     outputToFile(vm);
+}
+
+int main()
+{
+    runner();
     return 0;
 }

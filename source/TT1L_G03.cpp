@@ -117,9 +117,9 @@ void outputToFile(VirtualMachine &vm)
     fileOutput.close();
 }
 
-void runInstruction(VirtualMachine &vm, vector<string> &command)
+void runInstruction(VirtualMachine vm, vector<string> command)
 {
-    const string &cmd = command[0];
+    const string cmd = command[0];
     if (cmd == "INPUT")
         input(vm, command);
     else if (cmd == "DISPLAY")
@@ -188,7 +188,7 @@ void getInstruction(VirtualMachine &vm, vector<string> &command, string instruct
 void runner()
 {
     VirtualMachine vm;
-
+    initVM(vm);
     ifstream assemblyProgram;
     string filename;
     do

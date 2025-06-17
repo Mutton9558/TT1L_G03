@@ -11,15 +11,30 @@ bool isMemoryAccess = false;
 
 struct VirtualMachine
 {
-    char registers[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-    bool OF = false;
-    bool UF = false;
-    bool ZF = false;
-    bool CF = false;
+    char registers[8];
+    bool OF;
+    bool UF;
+    bool ZF;
+    bool CF;
     unsigned char PC = 0;
-    char memoryAddresses[64] = {0};
+    char memoryAddresses[64];
 };
 #endif
+
+void initVM(VirtualMachine &vm)
+{
+    for (int i = 0; i < 8; i++)
+    {
+        vm.registers[i] = 0;
+    }
+
+    vm.OF = vm.UF = vm.ZF = vm.CF = 0;
+
+    for (int i = 0; i < 64; i++)
+    {
+        vm.memoryAddresses[i] = 0;
+    }
+}
 
 bool isNumber(const string checker)
 {
@@ -36,7 +51,7 @@ bool isNumber(const string checker)
 
 int getRegisterNumber(string name, bool &isMemoryAccess, VirtualMachine vm)
 {
-    if (name.length() == 2 && isdigit(name[1]))
+    if (name.length() == 2 && isdigit(name[1]) && name[0] == 'R')
     {
         if (name[1] - '0' < 0 || name[1] - '0' > 7)
         {
@@ -58,7 +73,7 @@ int getRegisterNumber(string name, bool &isMemoryAccess, VirtualMachine vm)
 
 int getMemoryAddress(string name, bool &isMemoryAccess, VirtualMachine vm)
 {
-    if (name[1] == 'R' && name.length() == 4 && isdigit(name[2]))
+    if (name[1] == 'R' && name.length() == 4 && isdigit(name[2]) && name[0] == '[' && name[3] == ']')
     {
         if (name[2] - '0' < 0 || name[2] - '0' > 7)
         {
@@ -71,7 +86,7 @@ int getMemoryAddress(string name, bool &isMemoryAccess, VirtualMachine vm)
             return (vm.registers[name[2] - '0']);
         }
     }
-    else if (name.length() > 2 && name.length() < 5)
+    else if (name.length() > 2 && name.length() < 5 && name[0] == '[' && name[3] == ']')
     {
         string memoryLoc = name.substr(1, name.length() - 2);
         try
@@ -193,38 +208,52 @@ void mov(VirtualMachine &vm, vector<string> command)
 
 void add(VirtualMachine &vm, vector<string> command)
 {
-
     if (command.size() != 3)
     {
         cout << "Invalid length for command ADD at line " << static_cast<int>(vm.PC) << endl;
         exit(-1);
     }
-
-    int reg1 = getRegisterNumber(command[1], isMemoryAccess, vm);
+    int reg1;
+    if (isNumber(command[1]))
+    {
+        reg1 = stoi(command[1]);
+    }
+    else
+    {
+        reg1 = getRegisterNumber(command[1], isMemoryAccess, vm);
+    }
     int reg2 = getRegisterNumber(command[2], isMemoryAccess, vm);
 
     vm.registers[reg2] = static_cast<int>(vm.registers[reg1]) + static_cast<int>(vm.registers[reg2]);
 
     checkByteRange(static_cast<int>(vm.registers[reg2]), vm);
-    vm.CF = (static_cast<int>(vm.registers[reg2]) > numeric_limits<char>::max() || static_cast<int>(vm.registers[reg2]) < numeric_limits<char>::min());
+    vm.CF = (static_cast<int>(vm.registers[reg2]) > 127);
 }
 
 void sub(VirtualMachine &vm, vector<string> command)
 {
-
     if (command.size() != 3)
     {
         cout << "Invalid length for command SUB at line " << static_cast<int>(vm.PC) << endl;
         exit(-1);
     }
-
-    int reg1 = getRegisterNumber(command[1], isMemoryAccess, vm);
+    int reg1;
+    if (isNumber(command[1]))
+    {
+        reg1 = stoi(command[1]);
+    }
+    else
+    {
+        reg1 = getRegisterNumber(command[1], isMemoryAccess, vm);
+    }
     int reg2 = getRegisterNumber(command[2], isMemoryAccess, vm);
-
-    vm.registers[reg2] = static_cast<int>(vm.registers[reg2]) - static_cast<int>(vm.registers[reg1]);
-
-    checkByteRange(static_cast<int>(vm.registers[reg2]), vm);
-    vm.CF = (static_cast<int>(vm.registers[reg2]) > numeric_limits<char>::max() || static_cast<int>(vm.registers[reg2]) < numeric_limits<char>::min());
+    int r1 = static_cast<int>(vm.registers[reg1]);
+    int r2 = static_cast<int>(vm.registers[reg2]);
+    bool isLower = (r2 < r1 && r1 > 0);
+    vm.registers[reg2] = r2 - r1;
+    r2 = static_cast<int>(vm.registers[reg2]);
+    checkByteRange(r2, vm);
+    vm.CF = (r2 > numeric_limits<char>::max() || isLower);
 }
 
 void mul(VirtualMachine &vm, vector<string> command)
@@ -234,12 +263,20 @@ void mul(VirtualMachine &vm, vector<string> command)
         cout << "Invalid length for command MUL at line " << static_cast<int>(vm.PC) << endl;
         exit(-1);
     }
-    int reg1 = getRegisterNumber(command[1], isMemoryAccess, vm);
+    int reg1;
+    if (isNumber(command[1]))
+    {
+        reg1 = stoi(command[1]);
+    }
+    else
+    {
+        reg1 = getRegisterNumber(command[1], isMemoryAccess, vm);
+    }
     int reg2 = getRegisterNumber(command[2], isMemoryAccess, vm);
 
     int result = static_cast<int>(vm.registers[reg1]) * static_cast<int>(vm.registers[reg2]);
     checkByteRange(result, vm);
-    vm.CF = (result > numeric_limits<char>::max() || result < numeric_limits<char>::min());
+    vm.CF = (result > numeric_limits<char>::max());
     vm.registers[reg2] = result;
 }
 
@@ -250,7 +287,15 @@ void div(VirtualMachine &vm, vector<string> command)
         cout << "Invalid length for command DIV at line " << static_cast<int>(vm.PC) << endl;
         exit(-1);
     }
-    int reg1 = getRegisterNumber(command[1], isMemoryAccess, vm);
+    int reg1;
+    if (isNumber(command[1]))
+    {
+        reg1 = stoi(command[1]);
+    }
+    else
+    {
+        reg1 = getRegisterNumber(command[1], isMemoryAccess, vm);
+    }
     int reg2 = getRegisterNumber(command[2], isMemoryAccess, vm);
 
     if (vm.registers[reg2] == 0)
@@ -260,7 +305,7 @@ void div(VirtualMachine &vm, vector<string> command)
     }
     int result = static_cast<int>(vm.registers[reg1]) / static_cast<int>(vm.registers[reg2]);
     checkByteRange(result, vm);
-    vm.CF = (result > numeric_limits<char>::max() || result < numeric_limits<char>::min());
+    vm.CF = (result < numeric_limits<char>::min());
     vm.registers[reg2] = static_cast<char>(result);
 }
 
@@ -275,7 +320,7 @@ void inc(VirtualMachine &vm, vector<string> command)
     int result = static_cast<int>(vm.registers[reg]);
     result++;
     checkByteRange(result, vm);
-    vm.CF = (result > numeric_limits<char>::max() || result < numeric_limits<char>::min());
+    vm.CF = (result > numeric_limits<char>::max());
     vm.registers[reg] = static_cast<char>(result);
 }
 
@@ -290,7 +335,7 @@ void dec(VirtualMachine &vm, vector<string> command)
     int result = static_cast<int>(vm.registers[reg]);
     result--;
     checkByteRange(result, vm);
-    vm.CF = (result > numeric_limits<char>::max() || result < numeric_limits<char>::min());
+    vm.CF = (result < numeric_limits<char>::min());
     vm.registers[reg] = static_cast<char>(result);
 }
 
@@ -345,6 +390,7 @@ void shl(VirtualMachine &vm, vector<string> command)
     {
         int shiftCount = stoi(command[2]);
         int num = getRegisterNumber(command[1], isMemoryAccess, vm);
+        int result = vm.registers[num] << shiftCount;
         vm.registers[num] = (vm.registers[num] << shiftCount);
     }
     catch (...)

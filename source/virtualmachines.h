@@ -320,7 +320,7 @@ void inc(VirtualMachine &vm, vector<string> command)
     int result = static_cast<int>(vm.registers[reg]);
     result++;
     checkByteRange(result, vm);
-    vm.CF = (result > numeric_limits<char>::max());
+    vm.CF = (result > 127);
     vm.registers[reg] = static_cast<char>(result);
 }
 
@@ -335,7 +335,7 @@ void dec(VirtualMachine &vm, vector<string> command)
     int result = static_cast<int>(vm.registers[reg]);
     result--;
     checkByteRange(result, vm);
-    vm.CF = (result < numeric_limits<char>::min());
+    vm.CF = (result < -128);
     vm.registers[reg] = static_cast<char>(result);
 }
 
@@ -390,12 +390,16 @@ void shl(VirtualMachine &vm, vector<string> command)
     {
         int shiftCount = stoi(command[2]);
         int num = getRegisterNumber(command[1], isMemoryAccess, vm);
-        int result = vm.registers[num] << shiftCount;
-        vm.registers[num] = (vm.registers[num] << shiftCount);
+        if (shiftCount > 8)
+            vm.CF = 0;
+        else
+            vm.CF = (vm.registers[num] >> (8 - shiftCount) & 1);
+        vm.registers[num] = vm.registers[num] << shiftCount;
+        checkByteRange(vm.registers[num], vm);
     }
     catch (...)
     {
-        cout << "Shift count is not a digit or invalid register number at " << static_cast<int>(vm.PC) << "!" << endl;
+        cout << "Shift count is not a digit at " << static_cast<int>(vm.PC) << "!" << endl;
     }
 }
 
@@ -410,7 +414,12 @@ void shr(VirtualMachine &vm, vector<string> command)
     {
         int shiftCount = stoi(command[2]);
         int num = getRegisterNumber(command[1], isMemoryAccess, vm);
-        vm.registers[num] = (vm.registers[num] >> shiftCount);
+        if (shiftCount > 8)
+            vm.CF = 0;
+        else
+            vm.CF = (vm.registers[num] << (8 - shiftCount) & 1);
+        vm.registers[num] = vm.registers[num] >> shiftCount;
+        checkByteRange(vm.registers[num], vm);
     }
     catch (...)
     {

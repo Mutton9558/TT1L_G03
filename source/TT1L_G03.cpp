@@ -117,7 +117,7 @@ void outputToFile(VirtualMachine &vm)
     fileOutput.close();
 }
 
-void runInstruction(VirtualMachine vm, vector<string> command)
+void runInstruction(VirtualMachine &vm, vector<string> command)
 {
     const string cmd = command[0];
     if (cmd == "INPUT")
@@ -152,8 +152,7 @@ void runInstruction(VirtualMachine vm, vector<string> command)
         store(vm, command);
     else
     {
-        cout << "Invalid instruction name " << cmd
-             << " at line " << static_cast<int>(vm.PC) << "!" << endl;
+        cout << "Invalid instruction name " << cmd << " at line " << static_cast<int>(vm.PC) << "!" << endl;
         exit(-1);
     }
 }

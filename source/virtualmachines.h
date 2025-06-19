@@ -1,13 +1,9 @@
 #include <iostream>
 #include <vector>
-#include <limits>
 
 using namespace std;
 
 bool isMemoryAccess = false;
-
-#ifndef VIRTUAL_MACHINE
-#define VIRTUAL_MACHINE
 
 struct VirtualMachine
 {
@@ -19,7 +15,6 @@ struct VirtualMachine
     unsigned char PC = 0;
     char memoryAddresses[64];
 };
-#endif
 
 void initVM(VirtualMachine &vm)
 {
@@ -89,7 +84,7 @@ int getMemoryAddress(string name, bool &isMemoryAccess, VirtualMachine vm)
     else if (name.length() > 2 && name.length() < 5 && name[0] == '[' && name[3] == ']')
     {
         string memoryLoc = name.substr(1, name.length() - 2);
-        try
+        if (isNumber(memoryLoc))
         {
             int memoryAddr = stoi(memoryLoc);
             if (memoryAddr < 0 || memoryAddr > 63)
@@ -102,7 +97,7 @@ int getMemoryAddress(string name, bool &isMemoryAccess, VirtualMachine vm)
                 return (stoi(memoryLoc));
             }
         }
-        catch (...)
+        else
         {
             cout << "No such memory location named " << memoryLoc << " at line " << static_cast<int>(vm.PC) << "!" << endl;
             exit(-1);
@@ -253,7 +248,7 @@ void sub(VirtualMachine &vm, vector<string> command)
     vm.registers[reg2] = r2 - r1;
     r2 = static_cast<int>(vm.registers[reg2]);
     checkByteRange(r2, vm);
-    vm.CF = (r2 > numeric_limits<char>::max() || isLower);
+    vm.CF = (r2 > 127 || isLower);
 }
 
 void mul(VirtualMachine &vm, vector<string> command)
@@ -276,7 +271,7 @@ void mul(VirtualMachine &vm, vector<string> command)
 
     int result = static_cast<int>(vm.registers[reg1]) * static_cast<int>(vm.registers[reg2]);
     checkByteRange(result, vm);
-    vm.CF = (result > numeric_limits<char>::max());
+    vm.CF = (result > 127);
     vm.registers[reg2] = result;
 }
 
@@ -305,7 +300,7 @@ void div(VirtualMachine &vm, vector<string> command)
     }
     int result = static_cast<int>(vm.registers[reg1]) / static_cast<int>(vm.registers[reg2]);
     checkByteRange(result, vm);
-    vm.CF = (result < numeric_limits<char>::min());
+    vm.CF = (result < -128);
     vm.registers[reg2] = static_cast<char>(result);
 }
 
@@ -347,15 +342,15 @@ void rol(VirtualMachine &vm, vector<string> command)
         cout << "Invalid length for command ROL at line " << static_cast<int>(vm.PC) << endl;
         exit(-1);
     }
-    try
+    if (isNumber(command[2]))
     {
         int rotateAmount = stoi(command[2]);
         int num = getRegisterNumber(command[1], isMemoryAccess, vm);
         vm.registers[num] = (vm.registers[num] << rotateAmount) | (vm.registers[num] >> (8 - rotateAmount));
     }
-    catch (...)
+    else
     {
-        cout << "Rotate amount is not a digit or invalid register at " << static_cast<int>(vm.PC) << "!" << endl;
+        cout << "Rotate amount not a number at line " << static_cast<int>(vm.PC) << endl;
     }
 }
 
@@ -366,16 +361,15 @@ void ror(VirtualMachine &vm, vector<string> command)
         cout << "Invalid length for command ROR at line " << static_cast<int>(vm.PC) << endl;
         exit(-1);
     }
-
-    try
+    if (isNumber(command[2]))
     {
         int rotateAmount = stoi(command[2]);
         int num = getRegisterNumber(command[1], isMemoryAccess, vm);
         vm.registers[num] = (vm.registers[num] >> rotateAmount) | (vm.registers[num] << (8 - rotateAmount));
     }
-    catch (...)
+    else
     {
-        cout << "Rotate amount is not a digit or invalid register at " << static_cast<int>(vm.PC) << "!" << endl;
+        cout << "Rotate amount not a number at line " << static_cast<int>(vm.PC) << endl;
     }
 }
 
@@ -386,7 +380,7 @@ void shl(VirtualMachine &vm, vector<string> command)
         cout << "Invalid length for command SHL at line " << static_cast<int>(vm.PC) << endl;
         exit(-1);
     }
-    try
+    if (isNumber(command[2]))
     {
         int shiftCount = stoi(command[2]);
         int num = getRegisterNumber(command[1], isMemoryAccess, vm);
@@ -397,9 +391,9 @@ void shl(VirtualMachine &vm, vector<string> command)
         vm.registers[num] = vm.registers[num] << shiftCount;
         checkByteRange(vm.registers[num], vm);
     }
-    catch (...)
+    else
     {
-        cout << "Shift count is not a digit at " << static_cast<int>(vm.PC) << "!" << endl;
+        cout << "Shift amount is not a number at line " << static_cast<int>(vm.PC) << endl;
     }
 }
 
@@ -410,7 +404,7 @@ void shr(VirtualMachine &vm, vector<string> command)
         cout << "Invalid length for command SHL at line " << static_cast<int>(vm.PC) << endl;
         exit(-1);
     }
-    try
+    if (isNumber(command[2]))
     {
         int shiftCount = stoi(command[2]);
         int num = getRegisterNumber(command[1], isMemoryAccess, vm);
@@ -421,9 +415,9 @@ void shr(VirtualMachine &vm, vector<string> command)
         vm.registers[num] = vm.registers[num] >> shiftCount;
         checkByteRange(vm.registers[num], vm);
     }
-    catch (...)
+    else
     {
-        cout << "Shift count is not a digit or invalid register number at " << static_cast<int>(vm.PC) << "!" << endl;
+        cout << "Shift amount is not a number at line " << static_cast<int>(vm.PC) << endl;
     }
 }
 

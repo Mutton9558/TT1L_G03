@@ -114,6 +114,13 @@ void outputToFile(VirtualMachine &vm)
                << endl;
     fileOutput << memoryText << endl;
 
+    cout << registerText << endl;
+    cout << flagText.str() << endl;
+    cout << pcText.str() << endl
+         << endl;
+    cout << memoryText << endl;
+
+    cout << "Result stored in output.txt" << endl;
     fileOutput.close();
 }
 
@@ -192,7 +199,7 @@ void runner()
     string filename;
     do
     {
-        cout << "Type the name of a file" << std::endl;
+        cout << "Type the name of a file (must include .asm extension)" << std::endl;
         cin >> filename;
         assemblyProgram.open(filename);
         if (!assemblyProgram.is_open())

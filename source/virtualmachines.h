@@ -70,12 +70,7 @@ int getMemoryAddress(string name, bool &isMemoryAccess, VirtualMachine vm)
 {
     if (name[1] == 'R' && name.length() == 4 && isdigit(name[2]) && name[0] == '[' && name[3] == ']')
     {
-        if (name[2] - '0' < 0 || name[2] - '0' > 7)
-        {
-            cout << "Presence of Invalid Register Number at line " << static_cast<int>(vm.PC) << endl;
-            exit(-1);
-        }
-        else
+        if (name[2] - '0' > 0 || name[2] - '0' < 7)
         {
             isMemoryAccess = true;
             return (vm.registers[name[2] - '0']);
@@ -88,21 +83,17 @@ int getMemoryAddress(string name, bool &isMemoryAccess, VirtualMachine vm)
         {
             int memoryAddr = stoi(memoryLoc);
             if (memoryAddr < 0 || memoryAddr > 63)
-            {
                 cout << "Presence of invalid memory address at line " << static_cast<int>(vm.PC) << endl;
-            }
             else
             {
                 isMemoryAccess = true;
                 return (stoi(memoryLoc));
             }
         }
-        else
-        {
-            cout << "No such memory location named " << memoryLoc << " at line " << static_cast<int>(vm.PC) << "!" << endl;
-            exit(-1);
-        }
     }
+    else
+        cout << "Invalid memory location or register number at line " << static_cast<int>(vm.PC) << endl;
+    exit(-1);
     return -1;
 }
 
@@ -199,6 +190,7 @@ void mov(VirtualMachine &vm, vector<string> command)
             vm.registers[num2] = vm.registers[num1];
         }
     }
+    checkByteRange(static_cast<int>(vm.registers[num2]), vm);
 }
 
 void add(VirtualMachine &vm, vector<string> command)

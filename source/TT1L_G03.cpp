@@ -102,11 +102,11 @@ void outputToFile(VirtualMachine &vm)
     string memoryText = memoryOutput(vm);
 
     fileOutput.open("output.txt");
-    if (!fileOutput.is_open())
-    {
-        cout << "Error opening file output.txt" << endl;
-        exit(-1);
-    }
+    // if (!fileOutput.is_open())
+    // {
+    //     cout << "Error opening file output.txt" << endl;
+    //     exit(-1);
+    // }
 
     fileOutput << registerText << endl;
     fileOutput << flagText.str() << endl;
@@ -124,16 +124,22 @@ void outputToFile(VirtualMachine &vm)
     fileOutput.close();
 }
 
-void runInstruction(VirtualMachine &vm, vector<string> command)
+bool IOInstructions(VirtualMachine &vm, vector<string> command)
 {
     const string cmd = command[0];
     if (cmd == "INPUT")
         input(vm, command);
     else if (cmd == "DISPLAY")
         display(vm, command);
-    else if (cmd == "MOV")
-        mov(vm, command);
-    else if (cmd == "ADD")
+    else
+        return false;
+    return true;
+}
+
+bool arithmeticOperations(VirtualMachine &vm, vector<string> command)
+{
+    const string cmd = command[0];
+    if (cmd == "ADD")
         add(vm, command);
     else if (cmd == "SUB")
         sub(vm, command);
@@ -141,25 +147,72 @@ void runInstruction(VirtualMachine &vm, vector<string> command)
         mul(vm, command);
     else if (cmd == "DIV")
         div(vm, command);
+    else
+        return false;
+    return true;
+}
+
+bool incrementOrDecrementOperations(VirtualMachine &vm, vector<string> command)
+{
+    const string cmd = command[0];
+    if (cmd == "DIV")
+        div(vm, command);
     else if (cmd == "INC")
         inc(vm, command);
-    else if (cmd == "DEC")
-        dec(vm, command);
-    else if (cmd == "ROL")
+    else
+        return false;
+    return true;
+}
+
+bool rotateOrShiftOperations(VirtualMachine &vm, vector<string> command)
+{
+    const string cmd = command[0];
+    if (cmd == "ROL")
         rol(vm, command);
     else if (cmd == "ROR")
-        rol(vm, command);
+        ror(vm, command);
     else if (cmd == "SHL")
         shl(vm, command);
     else if (cmd == "SHR")
         shr(vm, command);
-    else if (cmd == "LOAD")
+    else
+        return false;
+    return true;
+}
+
+bool loadOrStoreOperations(VirtualMachine &vm, vector<string> command)
+{
+    const string cmd = command[0];
+    if (cmd == "LOAD")
         load(vm, command);
     else if (cmd == "STORE")
         store(vm, command);
     else
+        return false;
+    return true;
+}
+
+void runInstruction(VirtualMachine &vm, vector<string> command)
+{
+    const string cmd = command[0];
+    if (IOInstructions(vm, command))
+        return;
+    else if (cmd == "MOV")
     {
-        cout << "Invalid instruction name " << cmd << " at line " << static_cast<int>(vm.PC) << "!" << endl;
+        mov(vm, command);
+        return;
+    }
+    else if (arithmeticOperations(vm, command))
+        return;
+    else if (incrementOrDecrementOperations(vm, command))
+        return;
+    else if (rotateOrShiftOperations(vm, command))
+        return;
+    else if (loadOrStoreOperations(vm, command))
+        return;
+    else
+    {
+        cout << "Invalid instruction " << cmd << "at line " << static_cast<int>(vm.PC) << endl;
         exit(-1);
     }
 }

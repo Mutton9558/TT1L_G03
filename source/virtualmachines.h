@@ -34,12 +34,10 @@ void initVM(VirtualMachine &vm)
 bool isNumber(const string checker)
 {
 
-    for (auto a : checker)
+    for (int i = 0; i < checker.length(); i++)
     {
-        if (!isdigit(a))
-        {
+        if (!(isdigit(checker[i]) || (checker[i] == '-' && i == 0)))
             return false;
-        }
     }
     return true;
 }
@@ -340,12 +338,11 @@ void rol(VirtualMachine &vm, vector<string> command)
     {
         int rotateAmount = stoi(command[2]);
         int num = getRegisterNumber(command[1], isMemoryAccess, vm);
-        vm.registers[num] = (vm.registers[num] << rotateAmount) | (vm.registers[num] >> (8 - rotateAmount));
+        unsigned char value = static_cast<unsigned char>(vm.registers[num]);
+        vm.registers[num] = (value << rotateAmount) | (value >> (8 - rotateAmount));
     }
     else
-    {
         cout << "Rotate amount not a number at line " << static_cast<int>(vm.PC) << endl;
-    }
 }
 
 void ror(VirtualMachine &vm, vector<string> command)
@@ -359,12 +356,11 @@ void ror(VirtualMachine &vm, vector<string> command)
     {
         int rotateAmount = stoi(command[2]);
         int num = getRegisterNumber(command[1], isMemoryAccess, vm);
-        vm.registers[num] = (vm.registers[num] >> rotateAmount) | (vm.registers[num] << (8 - rotateAmount));
+        unsigned char value = static_cast<unsigned char>(vm.registers[num]);
+        vm.registers[num] = (value >> rotateAmount) | (value << (8 - rotateAmount));
     }
     else
-    {
         cout << "Rotate amount not a number at line " << static_cast<int>(vm.PC) << endl;
-    }
 }
 
 void shl(VirtualMachine &vm, vector<string> command)
@@ -378,17 +374,16 @@ void shl(VirtualMachine &vm, vector<string> command)
     {
         int shiftCount = stoi(command[2]);
         int num = getRegisterNumber(command[1], isMemoryAccess, vm);
+        unsigned char value = static_cast<unsigned char>(vm.registers[num]);
         if (shiftCount > 8)
             vm.CF = 0;
         else
-            vm.CF = (vm.registers[num] >> (8 - shiftCount) & 1);
-        vm.registers[num] = vm.registers[num] << shiftCount;
+            vm.CF = (value >> (8 - shiftCount) & 0b10000000);
+        vm.registers[num] = value << shiftCount;
         checkByteRange(vm.registers[num], vm);
     }
     else
-    {
         cout << "Shift amount is not a number at line " << static_cast<int>(vm.PC) << endl;
-    }
 }
 
 void shr(VirtualMachine &vm, vector<string> command)
@@ -402,17 +397,16 @@ void shr(VirtualMachine &vm, vector<string> command)
     {
         int shiftCount = stoi(command[2]);
         int num = getRegisterNumber(command[1], isMemoryAccess, vm);
+        unsigned char value = static_cast<unsigned char>(vm.registers[num]);
         if (shiftCount > 8)
             vm.CF = 0;
         else
-            vm.CF = (vm.registers[num] << (8 - shiftCount) & 1);
-        vm.registers[num] = vm.registers[num] >> shiftCount;
+            vm.CF = (value << (8 - shiftCount) & 0b10000000);
+        vm.registers[num] = value >> shiftCount;
         checkByteRange(vm.registers[num], vm);
     }
     else
-    {
         cout << "Shift amount is not a number at line " << static_cast<int>(vm.PC) << endl;
-    }
 }
 
 void load(VirtualMachine &vm, vector<string> command)
@@ -428,9 +422,7 @@ void load(VirtualMachine &vm, vector<string> command)
         }
     }
     else
-    {
         num1 = getMemoryAddress(command[1], isMemoryAccess, vm);
-    }
     int num2 = getRegisterNumber(command[2], isMemoryAccess, vm);
     vm.registers[num2] = vm.memoryAddresses[num1];
 }
@@ -449,8 +441,6 @@ void store(VirtualMachine &vm, vector<string> command)
         }
     }
     else
-    {
         num2 = getMemoryAddress(command[2], isMemoryAccess, vm);
-    }
     vm.memoryAddresses[num2] = vm.registers[num1];
 }

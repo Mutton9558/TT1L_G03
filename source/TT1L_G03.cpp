@@ -42,7 +42,7 @@ string registerOutput(VirtualMachine &vm)
         int item = static_cast<int>(vm.registers[i]);
         if (item < 0)
         {
-            registerText << setw(4) << item;
+            registerText << setfill(' ') << setw(4) << item;
         }
         else
         {
@@ -69,7 +69,7 @@ string memoryOutput(VirtualMachine &vm)
         int item = static_cast<int>(vm.memoryAddresses[i]);
         if (item < 0)
         {
-            memoryText << setw(4) << item << "  ";
+            memoryText << setfill(' ') << setw(4) << item << "  ";
         }
         else
         {
@@ -90,9 +90,9 @@ void outputToFile(VirtualMachine &vm)
     ostringstream flagText;
     flagText << "Flags    : ";
     flagText
+        << vm.CF << "   "
         << vm.OF << "   "
         << vm.UF << "   "
-        << vm.CF << "   "
         << vm.ZF << "#";
     ostringstream pcText;
     pcText << "PC       : " << static_cast<int>(vm.PC);

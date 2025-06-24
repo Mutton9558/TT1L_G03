@@ -87,7 +87,6 @@ void outputToFile(VirtualMachine &vm)
 {
     ofstream fileOutput;
     string registerText = registerOutput(vm);
-
     ostringstream flagText;
     flagText << "Flags    : ";
     flagText
@@ -95,31 +94,20 @@ void outputToFile(VirtualMachine &vm)
         << vm.UF << "   "
         << vm.CF << "   "
         << vm.ZF << "#";
-
     ostringstream pcText;
     pcText << "PC       : " << static_cast<int>(vm.PC);
-
     string memoryText = memoryOutput(vm);
-
     fileOutput.open("output.txt");
-    // if (!fileOutput.is_open())
-    // {
-    //     cout << "Error opening file output.txt" << endl;
-    //     exit(-1);
-    // }
-
     fileOutput << registerText << endl;
     fileOutput << flagText.str() << endl;
     fileOutput << pcText.str() << endl
                << endl;
     fileOutput << memoryText << endl;
-
     cout << registerText << endl;
     cout << flagText.str() << endl;
     cout << pcText.str() << endl
          << endl;
     cout << memoryText << endl;
-
     cout << "Result stored in output.txt" << endl;
     fileOutput.close();
 }

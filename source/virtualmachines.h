@@ -198,21 +198,21 @@ void add(VirtualMachine &vm, vector<string> command)
         cout << "Invalid length for command ADD at line " << static_cast<int>(vm.PC) << endl;
         exit(-1);
     }
-    int reg1;
+    int reg1, result;
     int reg2 = getRegisterNumber(command[2], isMemoryAccess, vm);
     if (isNumber(command[1]))
     {
         reg1 = stoi(command[1]);
-        vm.registers[reg2] = reg1 + static_cast<int>(vm.registers[reg2]);
+        result = reg1 + static_cast<int>(vm.registers[reg2]);
     }
     else
     {
         reg1 = getRegisterNumber(command[1], isMemoryAccess, vm);
-        vm.registers[reg2] = static_cast<int>(vm.registers[reg1]) + static_cast<int>(vm.registers[reg2]);
+        result = static_cast<int>(vm.registers[reg1]) + static_cast<int>(vm.registers[reg2]);
     }
-
-    checkByteRange(static_cast<int>(vm.registers[reg2]), vm);
-    vm.CF = (static_cast<int>(vm.registers[reg2]) > 127);
+    vm.registers[reg2] = result;
+    checkByteRange(result, vm);
+    vm.CF = (result > 127);
 }
 
 void sub(VirtualMachine &vm, vector<string> command)
@@ -237,9 +237,8 @@ void sub(VirtualMachine &vm, vector<string> command)
     int r2 = static_cast<int>(vm.registers[reg2]);
     bool isLower = (r2 < r1 && r1 > 0);
     vm.registers[reg2] = r2 - r1;
-    r2 = static_cast<int>(vm.registers[reg2]);
-    checkByteRange(r2, vm);
-    vm.CF = (r2 > 127 || isLower);
+    checkByteRange((r2 - r1), vm);
+    vm.CF = ((r2 - r1) > 127 || isLower);
 }
 
 void mul(VirtualMachine &vm, vector<string> command)

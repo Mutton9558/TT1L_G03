@@ -5,7 +5,7 @@ using namespace std;
 
 bool isMemoryAccess = false;
 
-// Virtual Machine architecture
+// Virtual Machine architecture.
 struct VirtualMachine
 {
     char registers[8];
@@ -17,7 +17,7 @@ struct VirtualMachine
     char memoryAddresses[64];
 };
 
-// intializes the virtual machine
+// Intializes the virtual machine.
 void initVM(VirtualMachine &vm)
 {
     for (int i = 0; i < 8; i++)
@@ -33,7 +33,7 @@ void initVM(VirtualMachine &vm)
     }
 }
 
-// checks if the given operand is a number
+// Checks if the given operand is a number.
 bool isNumber(const string checker)
 {
 
@@ -45,7 +45,7 @@ bool isNumber(const string checker)
     return true;
 }
 
-// gets the register number from the operand
+// Gets the register number from the operand.
 int getRegisterNumber(string name, bool &isMemoryAccess, VirtualMachine vm)
 {
     if (name.length() == 2 && isdigit(name[1]) && name[0] == 'R')
@@ -68,7 +68,7 @@ int getRegisterNumber(string name, bool &isMemoryAccess, VirtualMachine vm)
     return -1;
 }
 
-// gets the memory address from the operand
+// Gets the memory address from the operand.
 int getMemoryAddress(string name, bool &isMemoryAccess, VirtualMachine vm)
 {
     if (name[1] == 'R' && name.length() == 4 && isdigit(name[2]) && name[0] == '[' && name[3] == ']')
@@ -100,7 +100,7 @@ int getMemoryAddress(string name, bool &isMemoryAccess, VirtualMachine vm)
     return -1;
 }
 
-// gets the source whether it is a register operand or a memory address
+// Gets the source whether it is a register operand or a memory address.
 int getSource(string name, VirtualMachine vm)
 {
     int src;
@@ -123,7 +123,7 @@ int getSource(string name, VirtualMachine vm)
     return -1;
 }
 
-// flag checking (CF, OF, UF, ZF)
+// Flag checking (CF, OF, UF, ZF).
 void checkByteRange(int x, VirtualMachine &vm)
 {
     if (x > 127)
@@ -140,7 +140,7 @@ void checkByteRange(int x, VirtualMachine &vm)
     }
 }
 
-// gets user input and stores the ascii equivalent to a register
+// Gets user input and stores the ascii equivalent to a register.
 void input(VirtualMachine &vm, vector<string> command)
 {
     if (command.size() != 2)
@@ -156,7 +156,7 @@ void input(VirtualMachine &vm, vector<string> command)
     vm.registers[num] = res;
 }
 
-// displays content of a register
+// Displays content of a register.
 void display(VirtualMachine &vm, vector<string> command)
 {
 
@@ -170,7 +170,7 @@ void display(VirtualMachine &vm, vector<string> command)
     cout << static_cast<int>(vm.registers[reg]) << endl;
 }
 
-// puts value into register (can be number, value from register or value from memory)
+// Puts value into register (can be number, value from register or value from memory).
 void mov(VirtualMachine &vm, vector<string> command)
 {
     if (command.size() != 3)
@@ -201,7 +201,7 @@ void mov(VirtualMachine &vm, vector<string> command)
     checkByteRange(static_cast<int>(vm.registers[num2]), vm);
 }
 
-// performs addition of values from two registers or an immediate value with a register
+// Performs addition of values from two registers or an immediate value with a register.
 void add(VirtualMachine &vm, vector<string> command)
 {
     if (command.size() != 3)
@@ -226,7 +226,7 @@ void add(VirtualMachine &vm, vector<string> command)
     vm.CF = (result > 127);
 }
 
-// performs subtraction of values from two registers or an immediate value with a register
+// Performs subtraction of values from two registers or an immediate value with a register.
 void sub(VirtualMachine &vm, vector<string> command)
 {
     if (command.size() != 3)
@@ -253,7 +253,7 @@ void sub(VirtualMachine &vm, vector<string> command)
     vm.CF = ((r2 - r1) > 127 || isLower);
 }
 
-// performs multiplication of values from two registers or an immediate value with a register
+// Performs multiplication of values from two registers or an immediate value with a register.
 void mul(VirtualMachine &vm, vector<string> command)
 {
     if (command.size() != 3)
@@ -279,7 +279,7 @@ void mul(VirtualMachine &vm, vector<string> command)
     vm.registers[reg2] = result;
 }
 
-// performs division of values from two registers or an immediate value with a register
+// Performs division of values from two registers or an immediate value with a register.
 void div(VirtualMachine &vm, vector<string> command)
 {
     if (command.size() != 3)
@@ -309,7 +309,7 @@ void div(VirtualMachine &vm, vector<string> command)
     vm.registers[reg2] = static_cast<char>(result);
 }
 
-// Increments a value in a register by 1
+// Increments a value in a register by 1.
 void inc(VirtualMachine &vm, vector<string> command)
 {
     if (command.size() != 2)
@@ -325,7 +325,7 @@ void inc(VirtualMachine &vm, vector<string> command)
     vm.registers[reg] = static_cast<char>(result);
 }
 
-// Decrements a value in a register by 1
+// Decrements a value in a register by 1.
 void dec(VirtualMachine &vm, vector<string> command)
 {
     if (command.size() != 2)
@@ -341,7 +341,7 @@ void dec(VirtualMachine &vm, vector<string> command)
     vm.registers[reg] = static_cast<char>(result);
 }
 
-// Rotates the binary bits of a value in a register to the left by a set amount
+// Rotates the binary bits of a value in a register to the left by a set amount.
 void rol(VirtualMachine &vm, vector<string> command)
 {
 
@@ -361,7 +361,7 @@ void rol(VirtualMachine &vm, vector<string> command)
         cout << "Rotate amount not a number at line " << static_cast<int>(vm.PC) << endl;
 }
 
-// Rotates the binary bits of a value in a register to the right by a set amount
+// Rotates the binary bits of a value in a register to the right by a set amount.
 void ror(VirtualMachine &vm, vector<string> command)
 {
     if (command.size() != 3)
@@ -380,10 +380,10 @@ void ror(VirtualMachine &vm, vector<string> command)
         cout << "Rotate amount not a number at line " << static_cast<int>(vm.PC) << endl;
 }
 
-// Shift the binary bits of a value in a register to the left by a set amount
-// Flags will be updated
-// If the bit that gets shifted out is 1 -> Carry will be set (CF = 1)
-// If the bit that gets shifted out is 0 -> Carry will not be set (CF = 0)
+// Shift the binary bits of a value in a register to the left by a set amount.
+// Flags will be updated.
+// If the bit that gets shifted out is 1 -> Carry will be set (CF = 1).
+// If the bit that gets shifted out is 0 -> Carry will not be set (CF = 0).
 void shl(VirtualMachine &vm, vector<string> command)
 {
     if (command.size() != 3)
@@ -407,10 +407,10 @@ void shl(VirtualMachine &vm, vector<string> command)
         cout << "Shift amount is not a number at line " << static_cast<int>(vm.PC) << endl;
 }
 
-// Shift the binary bits of a value in a register to the right by a set amount
-// Flags will be updated
-// If the bit that gets shifted out is 1 -> Carry will be set (CF = 1)
-// If the bit that gets shifted out is 0 -> Carry will not be set (CF = 0)
+// Shift the binary bits of a value in a register to the right by a set amount.
+// Flags will be updated.
+// If the bit that gets shifted out is 1 -> Carry will be set (CF = 1).
+// If the bit that gets shifted out is 0 -> Carry will not be set (CF = 0).
 void shr(VirtualMachine &vm, vector<string> command)
 {
     if (command.size() != 3)
@@ -434,7 +434,7 @@ void shr(VirtualMachine &vm, vector<string> command)
         cout << "Shift amount is not a number at line " << static_cast<int>(vm.PC) << endl;
 }
 
-// Gets value from a memory address and stores it in a register
+// Gets value from a memory address and stores it in a register.
 void load(VirtualMachine &vm, vector<string> command)
 {
     int num1;
@@ -453,7 +453,7 @@ void load(VirtualMachine &vm, vector<string> command)
     vm.registers[num2] = vm.memoryAddresses[num1];
 }
 
-// Gets value from a register and stores it in a memory address
+// Gets value from a register and stores it in a memory address.
 void store(VirtualMachine &vm, vector<string> command)
 {
     int num1 = getRegisterNumber(command[1], isMemoryAccess, vm);

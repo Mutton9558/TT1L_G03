@@ -7,6 +7,8 @@
 
 using namespace std;
 
+// This function uses binary search to find the instruction (word) from a list of sorted instructions
+// That way it can determine if the user entered a valid instruction
 bool searchForInstruction(string word)
 {
     const string instructionSet[15] = {
@@ -32,6 +34,7 @@ bool searchForInstruction(string word)
     return false;
 }
 
+// Format output for register contents
 string registerOutput(VirtualMachine &vm)
 {
     ostringstream registerText;
@@ -60,6 +63,7 @@ string registerOutput(VirtualMachine &vm)
     return registerText.str();
 }
 
+// Format output for memory contents
 string memoryOutput(VirtualMachine &vm)
 {
     ostringstream memoryText;
@@ -83,6 +87,7 @@ string memoryOutput(VirtualMachine &vm)
     return memoryText.str();
 }
 
+// This function formats the output and puts it to a file and to the screen (terminal)
 void outputToFile(VirtualMachine &vm)
 {
     ofstream fileOutput;
@@ -112,6 +117,7 @@ void outputToFile(VirtualMachine &vm)
     fileOutput.close();
 }
 
+// Checks if the command is INPUT or DISPLAY
 bool IOInstructions(VirtualMachine &vm, vector<string> command)
 {
     const string cmd = command[0];
@@ -124,6 +130,7 @@ bool IOInstructions(VirtualMachine &vm, vector<string> command)
     return true;
 }
 
+// Checks if the command is an Arithmetic command (ADD, SUB, MUL, DIV)
 bool arithmeticOperations(VirtualMachine &vm, vector<string> command)
 {
     const string cmd = command[0];
@@ -140,11 +147,12 @@ bool arithmeticOperations(VirtualMachine &vm, vector<string> command)
     return true;
 }
 
+// Checks if the command is either INC (increment) or DEC (decrement)
 bool incrementOrDecrementOperations(VirtualMachine &vm, vector<string> command)
 {
     const string cmd = command[0];
-    if (cmd == "DIV")
-        div(vm, command);
+    if (cmd == "DEC")
+        dec(vm, command);
     else if (cmd == "INC")
         inc(vm, command);
     else
@@ -152,6 +160,7 @@ bool incrementOrDecrementOperations(VirtualMachine &vm, vector<string> command)
     return true;
 }
 
+// Checks if the command is either SHL, SHR, ROR or ROL
 bool rotateOrShiftOperations(VirtualMachine &vm, vector<string> command)
 {
     const string cmd = command[0];
@@ -168,6 +177,7 @@ bool rotateOrShiftOperations(VirtualMachine &vm, vector<string> command)
     return true;
 }
 
+// Checks if command is either LOAD or STORE
 bool loadOrStoreOperations(VirtualMachine &vm, vector<string> command)
 {
     const string cmd = command[0];
@@ -180,6 +190,7 @@ bool loadOrStoreOperations(VirtualMachine &vm, vector<string> command)
     return true;
 }
 
+// Runs command checking and runs their functions
 void runInstruction(VirtualMachine &vm, vector<string> command)
 {
     const string cmd = command[0];
@@ -205,6 +216,7 @@ void runInstruction(VirtualMachine &vm, vector<string> command)
     }
 }
 
+// Splits commands into "tokens" and from tokens, carries out the functions (format: opcode source destination)
 void getInstruction(VirtualMachine &vm, vector<string> &command, string instruction)
 {
     command.clear();
@@ -232,6 +244,9 @@ void getInstruction(VirtualMachine &vm, vector<string> &command, string instruct
     runInstruction(vm, command);
 }
 
+// The main runner function
+// It initialize the virtual machine, then checks for a file and opens it.
+// It will read each line of instruction, decode and run the specified instructions
 void runner()
 {
     VirtualMachine vm;
@@ -260,6 +275,7 @@ void runner()
     outputToFile(vm);
 }
 
+// main function that calls the runner
 int main()
 {
     runner();

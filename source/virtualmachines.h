@@ -126,18 +126,9 @@ int getSource(string name, VirtualMachine vm)
 // Flag checking (CF, OF, UF, ZF).
 void checkByteRange(int x, VirtualMachine &vm)
 {
-    if (x > 127)
-    {
-        vm.OF = 1;
-    }
-    else if (x < -128)
-    {
-        vm.UF = 1;
-    }
-    else if (x == 0)
-    {
-        vm.ZF = 1;
-    }
+    vm.OF = (x > 127);
+    vm.UF = (x < -128);
+    vm.ZF = (x == 0);
 }
 
 // Gets user input and stores the ascii equivalent to a register.
@@ -223,7 +214,7 @@ void add(VirtualMachine &vm, vector<string> command)
     }
     vm.registers[reg2] = result;
     checkByteRange(result, vm);
-    vm.CF = (result > 127);
+    vm.CF = (result > 127 || result < -128);
 }
 
 // Performs subtraction of values from two registers or an immediate value with a register.
@@ -261,9 +252,8 @@ void mul(VirtualMachine &vm, vector<string> command)
         cout << "Invalid length for command MUL at line " << static_cast<int>(vm.PC) << endl;
         exit(-1);
     }
-    int reg1;
+    int reg1, result;
     int reg2 = getRegisterNumber(command[2], isMemoryAccess, vm);
-    int result;
     if (isNumber(command[1]))
     {
         reg1 = stoi(command[1]);
@@ -275,7 +265,7 @@ void mul(VirtualMachine &vm, vector<string> command)
         result = static_cast<int>(vm.registers[reg1]) * static_cast<int>(vm.registers[reg2]);
     }
     checkByteRange(result, vm);
-    vm.CF = (result > 127);
+    vm.CF = (result > 127 || result < -128);
     vm.registers[reg2] = result;
 }
 
